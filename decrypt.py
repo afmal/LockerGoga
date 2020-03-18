@@ -13,9 +13,9 @@ import zlib
 import os
 import math
 
-ENCRYPTED_FILENAME = '..\\beforeafter\\best\\enc_full_footer.locked'
-RSA_PRIVK_FILENAME = '..\\key\\rsa.priv'
-KNOWN_GOGA_VERSION = ['1440']
+ENCRYPTED_FILENAME = 'PATH_FILENAME_OF_ENCRYPTED_FILE.locked'
+RSA_PRIVK_FILENAME = 'RSA_PRIVATE_KEY'
+KNOWN_GOGA_VERSION = ['1440']  # known versions of LockerGoga
 
 
 def main():
