@@ -4,9 +4,10 @@
 from Crypto.PublicKey import RSA
 from Crypto import Random
 from shutil import copyfile
+import argparse
 
 
-def gen_key_patch(file_patch, file_offset, private_key_file, public_key_file):
+def gen_key_patch(file_patch, file_offset, private_key_file='private_key.pem', public_key_file='public_key.pem'):
     print('Generating RSA key...')
     rsa_key = RSA.generate(1024, Random.new().read)  # generates key
     print('RSA key generated!')
@@ -45,13 +46,30 @@ def gen_key_patch(file_patch, file_offset, private_key_file, public_key_file):
     pub_file.close()  # close public file
     print('New public key written to %s!' % public_key_file)
 
+
 if __name__ == '__main__':
-    # global settings
-    FILE_TO_PATCH = 'test/data/getafmald_7bcd69_copy.exe'
-    FILE_PATCH_OFFSET = 0xFCE28
+    parser = argparse.ArgumentParser(description='Accepts a minimum of a file to patch and file offset then generates '
+                                                 'a binary patched with a newly generated public key.')
 
-    PRIVATE_KEY_FILE = 'test/data/private_key.pem'
-    PUBLIC_KEY_FILE = 'test/data/public_key.pem'
+    parser.add_argument('in_file', metavar='FILENAME', type=str, nargs=1,
+                        help='the file that is to be patched with the public key')
+    parser.add_argument('offset', metavar='INTEGER', type=int, nargs=1,
+                        help='decimal/integer offset start of patch')
+    parser.add_argument('--out_private', '--priv', metavar='FILENAME', type=str, nargs=1,
+                        help='the output filename for the newly generated private key')
+    parser.add_argument('--out_public', '--pub', metavar='FILENAME', type=str, nargs=1,
+                        help='the output filename for the newly generated public key')
+    args = parser.parse_args()
 
-    gen_key_patch(FILE_TO_PATCH, FILE_PATCH_OFFSET, PRIVATE_KEY_FILE, PUBLIC_KEY_FILE)
+    if not len(args.in_file) and len(args.offset):
+        raise Exception('Missing required positional arguments: in_file and offset!')  # not likely to be raised
+
+    in_file = args.in_file[0]
+    offset = args.offset[0]
+    out_private = args.out_private[0] if args.out_private else 'private_key.pem'
+    out_public = args.out_public[0] if args.out_public else 'public_key.pem'
+
+    gen_key_patch(in_file, offset, out_private, out_public)
+
+    print('Exiting!')
     exit()
