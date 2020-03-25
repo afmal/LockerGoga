@@ -10,15 +10,15 @@ from Crypto.Util import Counter
 from Crypto.Util.number import bytes_to_long
 import zlib
 import os
+import argparse
 
-ENCRYPTED_FILENAME = 'PATH_FILENAME_OF_ENCRYPTED_FILE.locked'
-RSA_PRIVK_FILENAME = 'RSA_PRIVATE_KEY'
-KNOWN_GOGA_VERSION = ['1440']  # known versions of LockerGoga
+# DEFAULT CONFIGURATIONS
+KNOWN_GOGA_VERSION = ['1440']
 
 
-def main():
-    enc_file_size = os.stat(ENCRYPTED_FILENAME).st_size
-    enc_file = open(ENCRYPTED_FILENAME, 'rb')
+def decrypt_file(encrypted_filename, private_key):
+    enc_file_size = os.stat(encrypted_filename).st_size
+    enc_file = open(encrypted_filename, 'rb')
     enc_body_aes = enc_file.read(enc_file_size-148)  # 148 bytes from the end to start reading the footer with the CRC
     enc_footer = enc_file.read(148)  #  footer, with 128 bytes encrypted by RSA
     enc_file.close()  # close file
@@ -45,7 +45,7 @@ def main():
         raise Exception("Unpacking failed: actual file size does not match file size in footer.")
 
     goga_rsa_128bytes_data = enc_footer[20:148]  # the rest of the footer: enc'd file key and IV
-    decrypted_footer = rsa_decrypt(goga_rsa_128bytes_data, RSA_PRIVK_FILENAME)
+    decrypted_footer = rsa_decrypt(goga_rsa_128bytes_data, private_key)
 
     enc_struct_always_zero = struct.unpack('<I', decrypted_footer[0:4])[0]  # when decrypted, this must be zero
     if enc_struct_always_zero != 0:
@@ -58,7 +58,7 @@ def main():
     if goga_rsa_magic != 'goga':
         raise Exception("Unpacking and/or RSA decryption failed: footer end magic not 'goga'!")
 
-    result_crc32 = aes_dec_file(goga_rsa_aes_key, goga_rsa_aes_seed, enc_body_aes)
+    result_crc32 = aes_dec_file(encrypted_filename, goga_rsa_aes_key, goga_rsa_aes_seed, enc_body_aes)
     # TODO: CRC32 is not checking out correctly, likely some operation performed on the 4 bytes, like negating...
     # TODO: ... not a priority right now, and plenty of other integrity checking happens
     #if goga_crc32 != result_crc32:
@@ -68,11 +68,12 @@ def main():
     #                    "CRC32 digest in footer does not match calculated CRC32 digest.")
 
 
-def aes_dec_file(aes_key, aes_seed, enc_data):
+def aes_dec_file(enc_file, aes_key, aes_seed, enc_data):
     counter = Counter.new(128, initial_value=bytes_to_long(aes_seed))  # bytes to long
     cipher = AES.new(aes_key, AES.MODE_CTR, counter=counter)
 
-    dec_file_handle = open(ENCRYPTED_FILENAME + '.decrypted', 'wb')
+    dec_filename = enc_file + '.decrypted'
+    dec_file_handle = open(dec_filename, 'wb')
 
     crc32_val = 0
     adler32_val = 0
@@ -88,12 +89,11 @@ def aes_dec_file(aes_key, aes_seed, enc_data):
         crc32_val = zlib.crc32(decrypted_data, crc32_val)
         adler32_val = zlib.adler32(decrypted_data, adler32_val)
 
-
         dec_file_handle.write(decrypted_data)  # write decrypted data to file
 
     dec_file_handle.close()
 
-    print("Decrypted results written to '" + ENCRYPTED_FILENAME + "'.")
+    print("Decrypted results written to '" + dec_filename + "'.")
     return crc32_val
 
 def rsa_decrypt(rsa_enc_data, rsa_privkey_filename):
@@ -103,6 +103,22 @@ def rsa_decrypt(rsa_enc_data, rsa_privkey_filename):
     rsa_dec_data = cipher.decrypt(rsa_enc_data)
     return rsa_dec_data
 
+
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Accepts an encrypted file and associated private key and attempts'
+                                                 'to decrypted the encrypted file.')
+
+    parser.add_argument('in_file', metavar='FILENAME', type=str, nargs=1,
+                        help='the file to be decrypted')
+    parser.add_argument('private_key', metavar='FILENAME', type=str, nargs=1,
+                        help='the associated private key')
+    args = parser.parse_args()
+
+    if not len(args.in_file) and len(args.private_key):
+        raise Exception('Missing required positional arguments: in_file and private_key!')  # not likely to be raised
+
+    in_file = args.in_file[0]
+    private_key = args.private_key[0]
+
+    decrypt_file(in_file, private_key)
     exit()
