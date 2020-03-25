@@ -1,30 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from Crypto.Cipher import PKCS1_OAEP, PKCS1_v1_5
+from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
-from Crypto.Hash import SHA1, SHA256
-import struct
+from Crypto.Hash import SHA1
+from struct import unpack
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 from Crypto.Util.number import bytes_to_long
-import zlib
-import os
-import argparse
+from zlib import crc32, adler32
+from os import stat
+from argparse import ArgumentParser
 
 # DEFAULT CONFIGURATIONS
 KNOWN_GOGA_VERSION = ['1440']
 
 
 def decrypt_file(encrypted_filename, private_key):
-    enc_file_size = os.stat(encrypted_filename).st_size
+    enc_file_size = stat(encrypted_filename).st_size
     enc_file = open(encrypted_filename, 'rb')
     enc_body_aes = enc_file.read(enc_file_size-148)  # 148 bytes from the end to start reading the footer with the CRC
     enc_footer = enc_file.read(148)  #  footer, with 128 bytes encrypted by RSA
     enc_file.close()  # close file
 
     ftr_struct_crc32 = enc_footer[0:4]       # checksum
-    goga_crc32 = struct.unpack('<I', ftr_struct_crc32)[0]
+    goga_crc32 = unpack('<I', ftr_struct_crc32)[0]
     print('Footer CRC32:\t', hex(goga_crc32))
 
     ftr_struct_marker = enc_footer[4:8]      # the 'GOGA' marker
@@ -40,14 +40,14 @@ def decrypt_file(encrypted_filename, private_key):
         input('Kill script now or continue at own risk...')
 
     ftr_struct_filesize = enc_footer[12:20]  # file size
-    goga_size = struct.unpack('<Q', ftr_struct_filesize)[0]
+    goga_size = unpack('<Q', ftr_struct_filesize)[0]
     if (enc_file_size-148) != goga_size:
         raise Exception("Unpacking failed: actual file size does not match file size in footer.")
 
     goga_rsa_128bytes_data = enc_footer[20:148]  # the rest of the footer: enc'd file key and IV
     decrypted_footer = rsa_decrypt(goga_rsa_128bytes_data, private_key)
 
-    enc_struct_always_zero = struct.unpack('<I', decrypted_footer[0:4])[0]  # when decrypted, this must be zero
+    enc_struct_always_zero = unpack('<I', decrypted_footer[0:4])[0]  # when decrypted, this must be zero
     if enc_struct_always_zero != 0:
         raise Exception("Unpacking and/or RSA decryption failed: unpacked 'ALWAYS_ZERO' is not zero!")
 
@@ -86,8 +86,8 @@ def aes_dec_file(enc_file, aes_key, aes_seed, enc_data):
         decrypted_data = cipher.decrypt(enc_data[i:i+chunk_size])
         length_total += len(decrypted_data)
 
-        crc32_val = zlib.crc32(decrypted_data, crc32_val)
-        adler32_val = zlib.adler32(decrypted_data, adler32_val)
+        crc32_val = crc32(decrypted_data, crc32_val)
+        adler32_val = adler32(decrypted_data, adler32_val)
 
         dec_file_handle.write(decrypted_data)  # write decrypted data to file
 
@@ -105,7 +105,7 @@ def rsa_decrypt(rsa_enc_data, rsa_privkey_filename):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Accepts an encrypted file and associated private key and attempts'
+    parser = ArgumentParser(description='Accepts an encrypted file and associated private key and attempts'
                                                  'to decrypted the encrypted file.')
 
     parser.add_argument('in_file', metavar='FILENAME', type=str, nargs=1,
