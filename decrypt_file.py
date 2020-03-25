@@ -5,13 +5,11 @@ from Crypto.Cipher import PKCS1_OAEP, PKCS1_v1_5
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA1, SHA256
 import struct
-from binascii import hexlify
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 from Crypto.Util.number import bytes_to_long
 import zlib
 import os
-import math
 
 ENCRYPTED_FILENAME = 'PATH_FILENAME_OF_ENCRYPTED_FILE.locked'
 RSA_PRIVK_FILENAME = 'RSA_PRIVATE_KEY'
@@ -34,7 +32,6 @@ def main():
     if goga_magic != 'GOGA':
         raise Exception("Unpacking failed: starter 'GOGA' magic is not familiar; "
                         "sample may not be encrypted by LockerGoga!")
-    #print('Marker:\t', goga_magic)
 
     ftr_struct_version = enc_footer[8:12]    # version of 'GOGA'
     goga_version = str(ftr_struct_version, 'utf-8')
@@ -62,7 +59,9 @@ def main():
         raise Exception("Unpacking and/or RSA decryption failed: footer end magic not 'goga'!")
 
     result_crc32 = aes_dec_file(goga_rsa_aes_key, goga_rsa_aes_seed, enc_body_aes)
-    #if goga_crc32 != result_crc32:  # TODO: CRC32 is not checking out
+    # TODO: CRC32 is not checking out correctly, likely some operation performed on the 4 bytes, like negating...
+    # TODO: ... not a priority right now, and plenty of other integrity checking happens
+    #if goga_crc32 != result_crc32:
     #    print('goga_crc32: ', hex(goga_crc32))
     #    print('result_crc32:', hex(result_crc32))
     #    raise Exception("Unpacking, RSA, or AES decryption failed: "
@@ -83,8 +82,6 @@ def aes_dec_file(aes_key, aes_seed, enc_data):
     data_range = range(0, len(enc_data), chunk_size)
 
     for i in data_range:
-        #if i >= data_range.stop-chunk_size*2:  # debugging
-        #    print("LAST")
         decrypted_data = cipher.decrypt(enc_data[i:i+chunk_size])
         length_total += len(decrypted_data)
 
@@ -93,12 +90,6 @@ def aes_dec_file(aes_key, aes_seed, enc_data):
 
 
         dec_file_handle.write(decrypted_data)  # write decrypted data to file
-
-    #print("CRC32 before XOR:", hex(crc32_val))
-    #print()
-    #print("CRC32 before XOR:", hex(crc32_val))
-    #print("Adler32:", hex(adler32_val))
-    #print("length_total:", length_total)
 
     dec_file_handle.close()
 
