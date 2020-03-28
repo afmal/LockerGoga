@@ -96,6 +96,7 @@ def aes_dec_file(enc_file, aes_key, aes_seed, enc_data):
     print("Decrypted results written to '" + dec_filename + "'.")
     return crc32_val
 
+
 def rsa_decrypt(rsa_enc_data, rsa_privkey_filename):
     rsa_key = RSA.importKey(open(rsa_privkey_filename, 'rb').read())
 
@@ -109,9 +110,9 @@ if __name__ == '__main__':
                                                  'to decrypted the encrypted file.')
 
     parser.add_argument('in_file', metavar='FILENAME', type=str, nargs=1,
-                        help='the file to be decrypted')
+                        help='filename of file to be decrypted')  # I didn't want this.
     parser.add_argument('private_key', metavar='FILENAME', type=str, nargs=1,
-                        help='the associated private key')
+                        help='filename of associated private key')
     args = parser.parse_args()
 
     if not len(args.in_file) and len(args.private_key):

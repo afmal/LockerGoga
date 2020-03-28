@@ -24,7 +24,7 @@ def gen_key_patch(file_patch, file_offset, private_key_file='private_key.pem', p
     print('Backing up file (%s)...' % file_patch)
     copyfile(file_patch, file_patch + '_backup')
 
-    print('Patching provided file (%s) using offset...' % file_patch)
+    print('Patching provided file (%s) using offset...' % file_patch)  # TODO: specify offset
     patch_file = open(file_patch, 'r+b')  # open file to patch
     patch_file.seek(file_offset)  # move to public key
     parsed_public_key = pub_exported[27:-25]  # parse public key data
@@ -52,13 +52,13 @@ if __name__ == '__main__':
                                                  'a binary patched with a newly generated public key.')
 
     parser.add_argument('in_file', metavar='FILENAME', type=str, nargs=1,
-                        help='the file that is to be patched with the public key')
+                        help='file that is to be patched with the public key')
     parser.add_argument('offset', metavar='INTEGER', type=int, nargs=1,
                         help='decimal/integer offset start of patch')
     parser.add_argument('--out_private', '--priv', metavar='FILENAME', type=str, nargs=1,
-                        help='the output filename for the newly generated private key')
+                        help='output filename for the newly generated private key')
     parser.add_argument('--out_public', '--pub', metavar='FILENAME', type=str, nargs=1,
-                        help='the output filename for the newly generated public key')
+                        help='output filename for the newly generated public key')
     args = parser.parse_args()
 
     if not len(args.in_file) and len(args.offset):
