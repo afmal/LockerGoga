@@ -62,7 +62,7 @@ if __name__ == '__main__':
         raise Exception('Missing required positional arguments: in_file and offset!')  # not likely to be raised
 
     in_file = args.in_file[0]
-    offset = int(args.offset[0].replace('\u202c', ''), 0)  # weird unicode char is appended to end requiring parse of last char
+    offset = int(args.offset[0].replace('\u202c', ''), 0)  # unicode char is added to end requiring parse of last char
     out_private = args.out_private[0] if args.out_private else 'private_key.pem'
     out_public = args.out_public[0] if args.out_public else 'public_key.pem'
 
