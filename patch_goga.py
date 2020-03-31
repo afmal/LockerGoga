@@ -50,8 +50,8 @@ if __name__ == '__main__':
 
     parser.add_argument('in_file', metavar='FILENAME', type=str, nargs=1,
                         help='file that is to be patched with the public key')
-    parser.add_argument('offset', metavar='INTEGER', type=int, nargs=1,
-                        help='decimal/integer offset start of patch')
+    parser.add_argument('offset', metavar='OFFSET', type=str, nargs=1,
+                        help='decimal/hexadecimal (with 0x) offset start of patch')
     parser.add_argument('--out_private', '--priv', metavar='FILENAME', type=str, nargs=1,
                         help='output filename for the newly generated private key')
     parser.add_argument('--out_public', '--pub', metavar='FILENAME', type=str, nargs=1,
@@ -62,7 +62,7 @@ if __name__ == '__main__':
         raise Exception('Missing required positional arguments: in_file and offset!')  # not likely to be raised
 
     in_file = args.in_file[0]
-    offset = args.offset[0]
+    offset = int(args.offset[0].replace('\u202c', ''), 0)  # weird unicode char is appended to end requiring parse of last char
     out_private = args.out_private[0] if args.out_private else 'private_key.pem'
     out_public = args.out_public[0] if args.out_public else 'public_key.pem'
 
