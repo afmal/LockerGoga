@@ -31,7 +31,7 @@ def decrypt_file(encrypted_filename, private_key):
     goga_magic = str(ftr_struct_marker, 'utf-8')
     if goga_magic != 'GOGA':
         raise Exception("Unpacking failed: starter 'GOGA' magic is not familiar; "
-                        "sample may not be encrypted by LockerGoga!")
+                        "sample may not be encrypted by LockerGoga or incorrect private key!")
 
     ftr_struct_version = enc_footer[8:12]    # version of 'GOGA'
     goga_version = str(ftr_struct_version, 'utf-8')
