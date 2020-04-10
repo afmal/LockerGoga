@@ -109,9 +109,9 @@ if __name__ == '__main__':
     parser = ArgumentParser(description='Accepts an encrypted file and associated private key and attempts'
                                                  'to decrypted the encrypted file.')
 
-    parser.add_argument('in_file', metavar='FILENAME', type=str, nargs=1,
+    parser.add_argument('in_file', metavar='ENCRYPTED', type=str, nargs=1,
                         help='filename of file to be decrypted')  # I didn't want this.
-    parser.add_argument('private_key', metavar='FILENAME', type=str, nargs=1,
+    parser.add_argument('private_key', metavar='PRIVATEKEY', type=str, nargs=1,
                         help='filename of associated private key')
     args = parser.parse_args()
 
