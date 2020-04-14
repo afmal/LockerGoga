@@ -1,7 +1,7 @@
 
 # LockerGoga Patcher and File Decryptor
   
-Scripts and other resources from LockerGoga ransomware reverse engineering effort: these tools are to be used for **analysis and training purposes only**.
+Proof of concept scripts and other resources from LockerGoga ransomware reverse engineering effort: these tools are to be used for **analysis and training purposes only**.
   
 
  - **decrypt_goga.py** - a script capable of LockerGoga file decryption with files that were encrypted with a known RSA public/private key
