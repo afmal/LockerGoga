@@ -27,50 +27,52 @@ def gen_key_patch(file_patch, file_offset, private_key_file='private_key.pem',
 
     # PATCHING FILE WITH PUBLIC KEY
     print('Patching provided file (%s) using offset (%s)...' % (file_patch, hex(file_offset)))
+    if advanced_flag:  # patching README filename  # TODO: confirm all of this works well, implement other features
+        # TODO: implement other features suck as changing file ext and version/goga tags
+
+        # README FILENAME
+        p_readme_filename_val = ''
+        while True:
+            p_readme_filename_val = input('Provide a README filename of 17 characters or less (enter to skip): ')
+            if len(p_readme_filename_val) <= 17:
+                break
+            print('The provided filename is too large: %d characters.' % len(p_readme_filename_val))
+
+        # ENCRYPTED FILE EXTENSION
+        p_encr_ext_val = ''
+        while True:
+            p_encr_ext_val = input('Provide an extension for encrypted files 6 characters or less (enter to skip): ')
+            if len(p_encr_ext_val) <= 6:
+                break
+            print('The provided extension is too large: %d characters.' % len(p_encr_ext_val))
+
+        # README FILE SIGNATURE
+        p_readme_signature_val = ''
+        while True:
+            p_readme_signature_val = input('Provide a signature of 48 characters or less (enter to skip): ')
+            if len(p_readme_signature_val) <= 48:
+                break
+            print('The provided signature is too large: %d characters.' % len(p_readme_signature_val))
+
     with open(file_patch, 'r+b') as patch_file:  # open file to patch
         parsed_public_key = pub_exported[27:-25]  # parse public key data
         patch_file.seek(file_offset)  # move to public key
         patch_file.write(parsed_public_key)  # parses extra from PEM public key
-        if advanced_flag:  # patching README filename  # TODO: confirm all of this works well, implement other features
-            # TODO: implement other features suck as changing file ext and version/goga tags
-            # README FILENAME
-            p_readme_filename_val = ''
-            while True:
-                p_readme_filename_val = input('Provide a README filename of 17 characters or less (enter to skip): ')
-                if len(p_readme_filename_val) <= 17:
-                    break
-                print('The provided filename is too large: %d characters.' % len(p_readme_filename_val))
-            if p_readme_filename_val:
-                p_readme_filename_pack = pack('18s', bytes(p_readme_filename_val, 'utf-8'))
-                p_readme_filename_offset = 0xFCF7C
-                patch_file.seek(p_readme_filename_offset)
-                patch_file.write(p_readme_filename_pack)
 
-            # ENCRYPTED FILE EXTENSION
-            p_encr_ext_val = ''
-            while True:
-                p_encr_ext_val = input('Provide an extension for encrypted files 6 characters or less (enter to skip): ')
-                if len(p_encr_ext_val) <= 6:
-                    break
-                print('The provided extension is too large: %d characters.' % len(p_encr_ext_val))
-            if p_encr_ext_val:
-                p_encr_ext_pack = pack('14s', bytes(p_encr_ext_val, 'utf-16')[2:])
-                p_encr_ext_offset = 0xFCF06
-                patch_file.seek(p_encr_ext_offset)
-                patch_file.write(p_encr_ext_pack)
+        if p_readme_filename_val:
+            p_readme_filename_pack = pack('18s', bytes(p_readme_filename_val, 'utf-8'))
+            patch_file.seek(0xFCF7C)
+            patch_file.write(p_readme_filename_pack)
 
-            # README FILE SIGNATURE
-            p_readme_signature_val = ''
-            while True:
-                p_readme_signature_val = input('Provide a signature of 48 characters or less (enter to skip): ')
-                if len(p_readme_signature_val) <= 48:
-                    break
-                print('The provided signature is too large: %d characters.' % len(p_readme_signature_val))
-            if p_readme_signature_val:
-                p_readme_signature_pack = pack('49s', bytes(p_readme_signature_val, 'utf-8'))
-                p_readme_signature_offset = 0xFCF44
-                patch_file.seek(p_readme_signature_offset)
-                patch_file.write(p_readme_signature_pack)
+        if p_encr_ext_val:
+            p_encr_ext_pack = pack('14s', bytes(p_encr_ext_val, 'utf-16')[2:])
+            patch_file.seek(0xFCF06)
+            patch_file.write(p_encr_ext_pack)
+
+        if p_readme_signature_val:
+            p_readme_signature_pack = pack('49s', bytes(p_readme_signature_val, 'utf-8'))
+            patch_file.seek(0xFCF44)
+            patch_file.write(p_readme_signature_pack)
 
     print('File (%s) patched!' % file_patch)
 
