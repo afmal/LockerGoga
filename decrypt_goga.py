@@ -105,10 +105,9 @@ def rsa_decrypt(rsa_enc_data, rsa_privkey_filename):
     return rsa_dec_data
 
 
-if __name__ == '__main__':
-    parser = ArgumentParser(description='Accepts an encrypted file and associated private key and attempts'
-                                                 'to decrypted the encrypted file.')
-
+def main():
+    parser = ArgumentParser(description='Accepts an encrypted file and associated private '
+                                        'key and attempts to decrypted the encrypted file.')
     parser.add_argument('in_file', metavar='ENCRYPTED', type=str, nargs=1,
                         help='filename of file to be decrypted')  # I didn't want this.
     parser.add_argument('private_key', metavar='PRIVATEKEY', type=str, nargs=1,
@@ -122,4 +121,8 @@ if __name__ == '__main__':
     private_key = args.private_key[0]
 
     decrypt_file(in_file, private_key)
+
+
+if __name__ == '__main__':
+    main()
     exit()
