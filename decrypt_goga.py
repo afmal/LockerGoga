@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from Crypto.Cipher import PKCS1_OAEP
-from Crypto.PublicKey import RSA
-from Crypto.Hash import SHA1
+from argparse import ArgumentParser
+from os import stat
 from struct import unpack
+from zlib import crc32, adler32
+
 from Crypto.Cipher import AES
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.Hash import SHA1
+from Crypto.PublicKey import RSA
 from Crypto.Util import Counter
 from Crypto.Util.number import bytes_to_long
-from zlib import crc32, adler32
-from os import stat
-from argparse import ArgumentParser
 
 # DEFAULT CONFIGURATIONS
 KNOWN_GOGA_VERSION = ['1440']

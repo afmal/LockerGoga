@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from Crypto.PublicKey import RSA
-from Crypto import Random
-from shutil import copyfile
 import argparse
+from shutil import copyfile
 from struct import pack
+
+from Crypto import Random
+from Crypto.PublicKey import RSA
 
 
 def gen_key_patch(file_patch, file_offset, private_key_file='private_key.pem',
