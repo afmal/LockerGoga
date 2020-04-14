@@ -31,7 +31,7 @@ def decrypt_file(encrypted_filename, private_key):
     goga_magic = str(ftr_struct_marker, 'utf-8')
     if goga_magic != 'GOGA':
         raise Exception("Unpacking failed: starter 'GOGA' magic is not familiar; "
-                        "sample may not be encrypted by LockerGoga!")
+                        "sample may not be encrypted by LockerGoga or incorrect private key!")
 
     ftr_struct_version = enc_footer[8:12]    # version of 'GOGA'
     goga_version = str(ftr_struct_version, 'utf-8')
@@ -105,13 +105,12 @@ def rsa_decrypt(rsa_enc_data, rsa_privkey_filename):
     return rsa_dec_data
 
 
-if __name__ == '__main__':
-    parser = ArgumentParser(description='Accepts an encrypted file and associated private key and attempts'
-                                                 'to decrypted the encrypted file.')
-
-    parser.add_argument('in_file', metavar='FILENAME', type=str, nargs=1,
+def main():
+    parser = ArgumentParser(description='Accepts an encrypted file and associated private '
+                                        'key and attempts to decrypted the encrypted file.')
+    parser.add_argument('in_file', metavar='ENCRYPTED', type=str, nargs=1,
                         help='filename of file to be decrypted')  # I didn't want this.
-    parser.add_argument('private_key', metavar='FILENAME', type=str, nargs=1,
+    parser.add_argument('private_key', metavar='PRIVATEKEY', type=str, nargs=1,
                         help='filename of associated private key')
     args = parser.parse_args()
 
@@ -122,4 +121,8 @@ if __name__ == '__main__':
     private_key = args.private_key[0]
 
     decrypt_file(in_file, private_key)
+
+
+if __name__ == '__main__':
+    main()
     exit()
